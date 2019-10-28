@@ -60,15 +60,23 @@ let styles =
     })
   );
 
-let timeOut: ref(option(timerID)) = ref(None);
-
-let sosBackgrounds: array(string) = [|"#F61D04", "#000000"|];
-
 module Sos = {
+  let timeOut: ref(option(timerID)) = ref(None);
+
+  type sosDim =
+    | Red
+    | Black;
+
+  let unwrapColor = sosDim =>
+    switch (sosDim) {
+    | Red => "#F61D04"
+    | Black => "#000000"
+    };
+
   [@react.component]
   let make = () => {
     // use to get the color from sosBackground array
-    let (colorIndex, setIndex) = React.useState(() => 0);
+    let (backgroundColor, setColor) = React.useState(() => Red);
 
     let sosText = [|"S", ".", "O", ".", "S"|];
 
@@ -76,7 +84,7 @@ module Sos = {
       style=Style.(
         array([|
           styles##root,
-          style(~backgroundColor=sosBackgrounds[colorIndex], ()),
+          style(~backgroundColor=backgroundColor |> unwrapColor, ()),
         |])
       )>
       {sosText
