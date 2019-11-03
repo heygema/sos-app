@@ -21,9 +21,14 @@ module Header = {
   external make: _ => React.element = "Header";
 };
 
-// binding here
+/*
+ =========
+ BINDING
+ =========
+ */
 type timerID;
 [@bs.val] external setTimeout: (unit => unit, int) => timerID = "setTimeout";
+[@bs.val] external clearTimeout: timerID => unit = "setTimeout";
 
 /*
  Here is StyleSheet that is using Style module to define styles for your components
