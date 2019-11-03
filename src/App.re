@@ -41,14 +41,7 @@ type timerID;
 let styles =
   Style.(
     StyleSheet.create({
-      "root":
-        style(
-          ~flex=1.,
-          ~justifyContent=`center,
-          ~padding=15.->pct,
-          ~alignItems=`center,
-          (),
-        ),
+      "root": style(~flex=1., ()),
       "simpleNav": style(~flex=0.1, ~backgroundColor=colors##black, ()),
       "sosText":
         style(
@@ -57,7 +50,7 @@ let styles =
           ~margin=0.->dp,
           ~transform=[|rotate(~rotate=90.->deg)|],
           ~textAlign=`center,
-          ~fontSize=PixelRatio.getPixelSizeForLayoutSize(50.) |> float_of_int,
+          ~fontSize=PixelRatio.getPixelSizeForLayoutSize(75.) |> float_of_int,
           (),
         ),
 
@@ -67,6 +60,7 @@ let styles =
 
 module Sos = {
   let timeOut: ref(option(timerID)) = ref(None);
+  let baseColor = {"red": "#F61D04", "black": "#000000"};
 
   type sosDim =
     | Red
@@ -74,18 +68,38 @@ module Sos = {
 
   let unwrapColor = sosDim =>
     switch (sosDim) {
-    | Red => "#F61D04"
-    | Black => "#000000"
+    | Red => baseColor##red
+    | Black => baseColor##black
+    };
+
+  let flipColor = current =>
+    switch (current) {
+    | Red => Black
+    | Black => Red
     };
 
   [@react.component]
   let make = () => {
     // use to get the color from sosBackground array
     let (backgroundColor, setColor) = React.useState(() => Red);
+    let flipConstant = 200;
 
-    let sosText = [|"S", ".", "O", ".", "S"|];
+    let sosText = [|"S", "O", "S"|];
 
-    <View
+    let timerId = ref(setTimeout(() => (), flipConstant));
+    let setTime = () => {
+      timerId :=
+        setTimeout(
+          () => setColor(current => current |> flipColor),
+          flipConstant,
+        );
+    };
+
+    setTime();
+
+    React.useEffect0(() => Some(() => clearTimeout(timerId^)));
+
+    <SafeAreaView
       style=Style.(
         array([|
           styles##root,
@@ -94,23 +108,25 @@ module Sos = {
       )>
       {sosText
        |> Array.mapi((i, text) =>
-            <Text key={string_of_int(i)} style={styles##sosText}>
-              {text}->React.string
-            </Text>
+            <View
+              key={string_of_int(i)}
+              style=Style.(
+                style(
+                  ~flex=1.,
+                  ~justifyContent=`center,
+                  ~alignItems=`center,
+                  (),
+                )
+              )>
+              <Text style={styles##sosText}> {text}->React.string </Text>
+            </View>
           )
        |> React.array}
-    </View>;
+    </SafeAreaView>;
   };
 };
 
 [@react.component]
 let app = () => {
-  <>
-    <StatusBar barStyle=`lightContent />
-    <SafeAreaView
-      style=Style.(style(~flex=1., ~backgroundColor=colors##black, ()))>
-      <Sos />
-      <View style={styles##simpleNav} />
-    </SafeAreaView>
-  </>;
+  <> <StatusBar barStyle=`lightContent /> <Sos /> </>;
 };
