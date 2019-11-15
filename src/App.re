@@ -86,18 +86,27 @@ module Sos = {
 
     let sosText = [|"S", "O", "S"|];
 
-    let timerId = ref(setTimeout(() => (), flipConstant));
+    let timerID = ref(None);
     let setTime = () => {
-      timerId :=
-        setTimeout(
-          () => setColor(current => current |> flipColor),
-          flipConstant,
+      timerID :=
+        Some(
+          setTimeout(
+            () => setColor(current => current |> flipColor),
+            flipConstant,
+          ),
         );
     };
 
     setTime();
 
-    React.useEffect0(() => Some(() => clearTimeout(timerId^)));
+    let mayClearTimeout = timerID => {
+      switch (timerID) {
+      | Some(timer) => clearTimeout(timer)
+      | None => ()
+      };
+    };
+
+    React.useEffect0(() => Some(() => mayClearTimeout(timerID^)));
 
     <SafeAreaView
       style=Style.(
